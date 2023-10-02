@@ -31,13 +31,17 @@ class Solver:
                     self.necessary_letters.append({letter: [i]})
                 # Set possible letters to only the correct letter
                 self.possible_letters[i] = [letter]
-            # The letter is in the word, but not correct
+            # The letter is in the word, but not in the right place
             elif color_result[i] == 'y':
-                # Update necessary letters to remove the incorrect letter
+                # Update necessary letters to add the letter
+                present = False
                 for l in self.necessary_letters:
-                    if letter in l.keys() and len(l.values()) > 1:
+                    if letter in l.keys():
                         l[letter].remove(i)
+                        present = True
                         break
+                if not present:
+                    self.necessary_letters.append({letter: [j for j in range(5) if j != i]})
                 # Update possible letters to remove the incorrect letter
                 self.possible_letters[i].remove(letter)
             # The letter is not in the word
@@ -52,36 +56,49 @@ class Solver:
                         self.possible_letters[i].remove(letter)
 
     def update_word_list(self):
-       for word in self.word_list:
+        words = []
+        for word in self.word_list:
             # Check if the word is possible
             possible = True
             for i, letter in enumerate(word):
                 if letter not in self.possible_letters[i]:
                     possible = False
                     break
+            # If the word is possible, continue to check
             if possible:
                 # Check if the word has the necessary letters
                 for l in self.necessary_letters:
-                    letter = l.keys()
+                    letter = str(l.keys()).lstrip("dict_keys([").rstrip("])")
+                    letter = letter.replace("'", "")
                     positions = l.values()
                     # Check if the letter is in the word in one of the possible positions
                     present = False
                     for position in positions:
-                        if word[position[0]] == letter:
-                            present = True
-                            break
+                        for p in position:
+                            if word[p] == letter:
+                                present = True
+                                break
                     if not present:
                         possible = False
                         break
-            # Remove the word if it is not possible
-            if not possible:
-                self.word_list.remove(word)
+            # Add the word if it is possible
+            if possible:
+                words.append(word)
+        self.word_list = words
     
     def import_word_list(self):
         # Import the word list
         with open('fiveLetterWords.txt', 'r') as f:
             word_list = f.read().splitlines()
         return word_list
+
+    def restart(self):
+        # Reset the solver
+        self.word_list = self.import_word_list()
+        self.possible_letters = []
+        for i in range(5):
+            self.possible_letters.append([letter for letter in alphabet])
+        self.necessary_letters = []
 
 
 class UserInterface:
@@ -137,12 +154,6 @@ class UserInterface:
             # Print the length of the word list
             print("Number of words remaining:", len(self.solver.word_list))
 
-            # Print necessary letters
-            print("Necessary letters: {}".format(self.solver.necessary_letters))
-
-            # Print possible letters
-            print("Possible letters: {}".format(self.solver.possible_letters))
-
             if len(self.solver.word_list) <= 1:
                 break
         
@@ -152,5 +163,7 @@ if __name__ == "__main__":
     while True:
         ui.run()
         restart = ui.get_input_for_restart()
-        if not restart:
+        if restart:
+            ui.restart()
+        else:
             break
