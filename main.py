@@ -156,6 +156,10 @@ class UserInterface:
 
             if len(self.solver.word_list) <= 1:
                 break
+    
+    def restart(self):
+        self.solver.restart()
+        self.clear_terminal()
         
 
 if __name__ == "__main__":
@@ -164,6 +168,7 @@ if __name__ == "__main__":
         ui.run()
         restart = ui.get_input_for_restart()
         if restart:
-            ui.restart()
+            ui.solver.restart()
+            ui.clear_terminal()
         else:
             break
