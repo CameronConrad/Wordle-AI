@@ -47,13 +47,21 @@ class Solver:
             # The letter is not in the word
             else:
                 # Update necessary letters to remove the incorrect letter
-                for l in self.necessary_letters:
-                    if letter in l.keys() and len(l.values()) > 1:
-                        l.pop(letter)
-                # Update possible letters to remove the incorrect letter
-                for i, letters in enumerate(self.possible_letters):
-                    if letter in letters and len(letters) > 1:
-                        self.possible_letters[i].remove(letter)
+                # Check if letter appears in any of the necessary letters
+                present = False
+                if len(self.necessary_letters) > 0:
+                    for l in self.necessary_letters:
+                        if letter in l.keys():
+                            present = True
+                            break
+                if not present:
+                    for l in self.necessary_letters:
+                        if letter in l.keys() and len(l.values()) > 1:
+                            l.pop(letter)
+                    # Update possible letters to remove the incorrect letter
+                    for i, letters in enumerate(self.possible_letters):
+                        if letter in letters and len(letters) > 1:
+                            self.possible_letters[i].remove(letter)
 
     def update_word_list(self):
         words = []
